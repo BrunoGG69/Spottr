@@ -1,0 +1,24 @@
+# Python files
+__pycache__/
+*.py[cod]
+*.env
+venv/
+.env
+
+# Node / React files
+node_modules/
+dist/
+.env.local
+.env.production
+
+# Webstorm files
+.idea/
+
+# Firmware files
+*.bin
+*.hex
+*.elf
+
+# OS
+.DS_Store
+Thumbs.db
