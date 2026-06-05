@@ -1,6 +1,6 @@
 ![Spottr Logo](docs/SPOTTR_LOGO.png)
 # SPOTTR: Real-time BLE Presence Tracking using ESP32
-SPOTTR is an open-source indoor presence trackign system built on ESP32-C3 and Bluetooth Low Energy. Wear a Badge, walk into a room, show up on a map
+SPOTTR is an open-source indoor presence tracking system built on ESP32-C3 and Bluetooth Low Energy. Wear a Badge, walk into a room, show up on a map
 
 ---
 ## Features
