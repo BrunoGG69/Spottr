@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"name": "spottr-badge",
+			"path": "backend/firmware/badge/spottr-badge"
+		}
+	],
+	"settings": {}
+}

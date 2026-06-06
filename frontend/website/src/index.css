@@ -128,3 +128,10 @@
     @apply font-sans;
     }
 }
+
+@font-face {
+    font-family: 'SavedByZero';
+    src: url('./assets/fonts/SavedByZero.otf') format('opentype');
+    font-weight: normal;
+    font-style: normal;
+}
