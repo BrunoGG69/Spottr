@@ -6,6 +6,10 @@
 		{
 			"name": "spottr-badge",
 			"path": "backend/firmware/badge/spottr-badge"
+		},
+		{
+			"name": "spottr-scanner",
+			"path": "backend/firmware/scanner/spottr-scanner"
 		}
 	],
 	"settings": {}
