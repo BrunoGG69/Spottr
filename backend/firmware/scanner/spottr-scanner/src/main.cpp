@@ -12,6 +12,8 @@ WiFiClient wifiClient;
 PubSubClient mqtt(wifiClient); //name the MQTT client "mqtt" or anything can be used here
 NimBLEScan* pBLEScan;
 
+unsigned long lastHeartbeat = 0;
+
 // Function to connect to MQTT broker with retry logic
 void connectMQTT() {
     while (!mqtt.connected()) {
@@ -25,6 +27,14 @@ void connectMQTT() {
             Serial.printf("failed rc=%d retrying in 3s\n", mqtt.state());
             delay(3000);
         }
+    }
+}
+
+void sendHeartbeat() {
+    if (millis() - lastHeartbeat >= 30000) {
+        mqtt.publish("spottr/scanners/heartbeat",
+            ("{\"scanner\":\"" SCANNER_ID "\",\"status\":\"online\",\"uptime\":" + String(millis() / 1000) + "}").c_str());
+        lastHeartbeat = millis();
     }
 }
 
@@ -92,4 +102,6 @@ void loop() {
         connectMQTT();
     }
     mqtt.loop();
+
+    sendHeartbeat();
 }
