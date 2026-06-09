@@ -4,7 +4,7 @@
 #include <PubSubClient.h>
 #include "secrets.h"
 
-#define SCANNER_ID "scanner_bedroom"
+#define SCANNER_ID "scanner_living_room"
 #define MQTT_BROKER "192.168.1.57"
 #define MQTT_PORT 1883
 

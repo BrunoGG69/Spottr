@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <NimBLEDevice.h>
 
-#define BADGE_ID "SPOTTR_BADGE_001"
+#define BADGE_ID "SPOTTR_BADGE_002"
 
 #ifndef LED_BUILTIN
 #define LED_BUILTIN 10
