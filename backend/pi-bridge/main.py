@@ -1,11 +1,29 @@
 import paho.mqtt.client as paho_mqtt
 import json
 import time
+import os
+import threading
+import firebase_admin
+from firebase_admin import credentials, db, firestore
+from dotenv import load_dotenv
+
+load_dotenv()
 
 MQTT_BROKER = "localhost"
 MQTT_PORT = 1883
 MQTT_TOPIC_PRESENCE = "spottr/presence"
 MQTT_TOPIC_HEARTBEAT = "spottr/scanners/heartbeat"
+SCANNER_TIMEOUT = 60
+
+FIREBASE_DB_URL = os.getenv("FIREBASE_DB_URL")
+SERVICE_ACCOUNT = os.getenv("SERVICE_ACCOUNT")
+
+cred = credentials.Certificate(SERVICE_ACCOUNT)
+firebase_admin.initialize_app(cred, {
+    "databaseURL": FIREBASE_DB_URL
+})
+
+fs_client = firestore.client() # Just making my life easier
 
 badge_locations = {}
 scanner_status = {}
@@ -16,6 +34,32 @@ def get_strongest_scanner(badge_id):
 	readings = badge_locations[badge_id]
 	strongest = max(readings, key=readings.get)
 	return strongest
+
+def update_firebase(badge_id, scanner, rssi):
+	strongest = get_strongest_scanner(badge_id)
+	db.reference(f"badge_location/{badge_id}").set({
+		"room" : strongest,
+		"rssi" : rssi,
+		"last_seen": int(time.time())
+	})
+	fs_client.collection("presence_log").add({
+		"badge_id" : badge_id,
+		"scanner" : scanner,
+		"rssi" : rssi,
+		"timestamp" : int(time.time())
+	})
+
+def check_scanner_status():
+	while True:
+		now = time.time()
+		for scanner, last_seen in list(scanner_status.items()):
+			if now - last_seen > SCANNER_TIMEOUT:
+				print(f"{scanner} is OFFLINE")
+				db.reference(f"scanner_status/{scanner}").set({
+					"status" : "OFFLINE",
+					"last_seen" : int(last_seen)
+				})
+		time.sleep(30)
 
 def on_connect(client, userdata, flags, result, properties):
 	if result == 0:
@@ -43,10 +87,21 @@ def on_message(client, userdata, message):
 		strongest_signal = get_strongest_scanner(badge_id)
 		print(f"BADGE: {badge_id}, STRONGEST_SIGNAL: {strongest_signal}, RSSI: {rssi}")
 
+		update_firebase(badge_id, scanner, rssi)
+
 	elif topic == MQTT_TOPIC_HEARTBEAT:
 		scanner = mqtt_message["scanner"]
 		scanner_status[scanner] = time.time()
 		print(f"{scanner} is ONLINE")
+
+		db.reference(f"scanner_status/{scanner}").set({
+			"status" : "ONLINE",
+			"last_seen" : int(time.time())
+		})
+
+# Used to check if the scanner is still online
+scanner_thread = threading.Thread(target = check_scanner_status, daemon = True)
+scanner_thread.start()
 
 client = paho_mqtt.Client(paho_mqtt.CallbackAPIVersion.VERSION2)
 client.on_connect = on_connect
