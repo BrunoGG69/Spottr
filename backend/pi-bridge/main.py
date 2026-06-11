@@ -13,7 +13,8 @@ MQTT_BROKER = "localhost"
 MQTT_PORT = 1883
 MQTT_TOPIC_PRESENCE = "spottr/presence"
 MQTT_TOPIC_HEARTBEAT = "spottr/scanners/heartbeat"
-SCANNER_TIMEOUT = 60
+SCANNER_TIMEOUT = 60 # Set Timeout for Scanner
+BADGE_TIMEOUT = 60 # Set Timeout for Badge
 
 FIREBASE_DB_URL = os.getenv("FIREBASE_DB_URL")
 SERVICE_ACCOUNT = os.getenv("SERVICE_ACCOUNT")
@@ -27,6 +28,7 @@ fs_client = firestore.client() # Just making my life easier
 
 badge_locations = {}
 scanner_status = {}
+badge_last_seen = {}
 
 def get_strongest_scanner(badge_id):
 	if badge_id not in badge_locations:
@@ -40,7 +42,8 @@ def update_firebase(badge_id, scanner, rssi):
 	db.reference(f"badge_location/{badge_id}").set({
 		"room" : strongest,
 		"rssi" : rssi,
-		"last_seen": int(time.time())
+		"last_seen": int(time.time()),
+		"status" : "ONLINE"
 	})
 	fs_client.collection("presence_log").add({
 		"badge_id" : badge_id,
@@ -58,6 +61,18 @@ def check_scanner_status():
 				db.reference(f"scanner_status/{scanner}").set({
 					"status" : "OFFLINE",
 					"last_seen" : int(last_seen)
+				})
+		time.sleep(30)
+
+def check_badge_status():
+	while True:
+		now = time.time()
+		for badge_id, last_seen in list(badge_last_seen.items()):
+			if now - last_seen > BADGE_TIMEOUT:
+				print(f"{badge_id} is OFFLINE")
+				db.reference(f"badge_location/{badge_id}").update({
+					"status": "OFFLINE",
+					"last_seen": int(last_seen)
 				})
 		time.sleep(30)
 
@@ -83,6 +98,7 @@ def on_message(client, userdata, message):
 			badge_locations[badge_id] = {}
 
 		badge_locations[badge_id][scanner] = rssi
+		badge_last_seen[badge_id] = time.time()
 
 		strongest_signal = get_strongest_scanner(badge_id)
 		print(f"BADGE: {badge_id}, STRONGEST_SIGNAL: {strongest_signal}, RSSI: {rssi}")
@@ -102,6 +118,10 @@ def on_message(client, userdata, message):
 # Used to check if the scanner is still online
 scanner_thread = threading.Thread(target = check_scanner_status, daemon = True)
 scanner_thread.start()
+
+# Used to check if the badge is still online
+badge_thread = threading.Thread(target = check_badge_status, daemon = True)
+badge_thread.start()
 
 client = paho_mqtt.Client(paho_mqtt.CallbackAPIVersion.VERSION2)
 client.on_connect = on_connect
