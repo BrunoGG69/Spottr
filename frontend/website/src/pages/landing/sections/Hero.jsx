@@ -44,9 +44,10 @@ export default function Hero() {
                             exit={{opacity: 0}}
                             transition={{duration: 0.8, ease: 'easeInOut'}}
                         >
-                            <div className="w-full h-32 sm:h-48 lg:h-full flex items-center justify-center">
-                                <TextHoverEffect text="SPOTTR" duration={0.3} showStroke={false}
-                                                 strokeColor="url(#textGradient)"/>
+                            <div className="w-full h-full flex items-center justify-center">
+                                <TextHoverEffect
+                                text="SPOTTR" duration={0.3} showStroke={false}
+                                strokeColor="url(#textGradient)"/>
                             </div>
                         </motion.div>
                     )}
