@@ -2,7 +2,7 @@ import {useEffect, useRef, useState} from 'react'
 import {AnimatePresence, motion, useScroll, useTransform} from 'framer-motion'
 import BadgeCanvas from '../../../components/3d/BadgeCanvas.jsx'
 import {TextHoverEffect} from '../../../components/ui/text-hover-effect.jsx'
-import Navbar from './Navbar.jsx'
+import Navbar from '../../../components/layout/Navbar.jsx'
 
 export default function Hero() {
     const ref = useRef(null)
