@@ -38,7 +38,7 @@ export default function Navbar({visible}) {
                     {/*Logo - Desktop*/}
                     <a href="#home"
                        className="flex items-center gap-2 md:relative absolute left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0">
-                        <img src="/SPOTTR.svg" alt="SPOTTR LOGO" className="h-7 w-7"/>
+                        <img src="/SPOTTR_LOGO_ONLY.svg" alt="SPOTTR LOGO" className="h-7 w-7"/>
                         <span className="text-white font-bold font-[SavedByZero] tracking-widest text-sm">SPOTTR</span>
                     </a>
 
