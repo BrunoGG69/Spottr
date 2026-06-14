@@ -1,6 +1,6 @@
 import {createContext, useContext, useEffect, useState} from 'react'
 import {auth} from "../firebase.js"
-import {onAuthStateChange, signInWithEmailAndPassword, signOut} from "firebase/auth"
+import {onAuthStateChanged, signInWithEmailAndPassword, signOut} from "firebase/auth"
 
 const AuthContext = createContext(null)
 
@@ -9,7 +9,7 @@ export function AuthProvider({ children }) {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        const unsub = onAuthStateChange(auth, (user) => {
+        const unsub = onAuthStateChanged(auth, (user) => {
             setUser(user)
             setLoading(false)
         })
