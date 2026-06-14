@@ -105,12 +105,13 @@ export default function Hero() {
                         </p>
 
                         <div className="flex items-center gap-4 mt-6">
-                            <motion.div
+                            <motion.a
                                 whileHover={{scale: 1.03}}
                                 whileTap={{scale: 0.97}}
+                                href="/login"
                                 className="px-6 py-3 bg-cyan-500 text-black font-semibold rounded hover:bg-cyan-400 transition-colors text-sm lg:text-base">
                                 Get Started
-                            </motion.div>
+                            </motion.a>
                             <motion.a
                                 whileHover={{scale: 1.03}}
                                 whileTap={{scale: 0.97}}
