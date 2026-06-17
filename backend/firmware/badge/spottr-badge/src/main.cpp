@@ -1,21 +1,17 @@
 #include <Arduino.h>
 #include <NimBLEDevice.h>
 
-#define BADGE_ID "SPOTTR_BADGE_002"
-
-#ifndef LED_BUILTIN
-#define LED_BUILTIN 10
-#endif
+#define BADGE_ID "SPOTTR"
 
 NimBLEAdvertising *adv;
 
 void setup() {
   Serial.begin(115200);
 
-  pinMode(LED_BUILTIN, OUTPUT);
-  digitalWrite(LED_BUILTIN, HIGH);
-
   NimBLEDevice::init(BADGE_ID);
+
+  String mac = NimBLEDevice::getAddress().toString().c_str();
+  Serial.print("Device MAC Address: " + mac + "\n");
 
   NimBLEAdvertisementData advData;
   advData.setName(BADGE_ID);
@@ -25,8 +21,7 @@ void setup() {
   adv->setAdvertisementData(advData);
   adv->start();
 
-  Serial.println("Badge advertising continuously...");
-  digitalWrite(LED_BUILTIN, LOW);
+  Serial.println("Badge advertising...");
 }
 
 void loop() {

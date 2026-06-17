@@ -4,7 +4,7 @@
 #include <PubSubClient.h>
 #include "secrets.h"
 
-#define SCANNER_ID "scanner_living_room"
+#define SCANNER_ID "scanner_bedroom"
 #define MQTT_BROKER "192.168.1.57"
 #define MQTT_PORT 1883
 
@@ -41,20 +41,18 @@ void sendHeartbeat() {
 // Callback class for handling BLE scan results
 class ScanCallback : public NimBLEScanCallbacks {
     void onResult(const NimBLEAdvertisedDevice* device) override {
-        String name = String(device->getName().c_str());
-        if (name.startsWith("SPOTTR_")) {
-            String payload = "{\"scanner\":\"" + String(SCANNER_ID) + "\","
-                            + "\"badge_id\":\"" + name + "\","
-                            + "\"rssi\":" + String(device->getRSSI()) + "}";
-
-            if (mqtt.connected()) {
-                mqtt.publish("spottr/presence", payload.c_str());            
-            }
-
-            Serial.printf("Spotted: %s | RSSI: %d\n", name.c_str(), device->getRSSI());
-
+    String name = String(device->getName().c_str());
+    if (name == "SPOTTR") {
+        String mac = String(device->getAddress().toString().c_str()); // ← here
+        String payload = "{\"scanner\":\"" + String(SCANNER_ID) + "\","
+                        + "\"badge_id\":\"" + mac + "\","
+                        + "\"rssi\":" + String(device->getRSSI()) + "}";
+        if (mqtt.connected()) {
+            mqtt.publish("spottr/presence", payload.c_str());
         }
+        Serial.printf("Spotted: %s | RSSI: %d\n", mac.c_str(), device->getRSSI());
     }
+}
 };
 
 // FreeRTOS task to continuously start BLE scanning without blocking the main loop
