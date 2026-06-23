@@ -1,169 +1,21 @@
-import paho.mqtt.client as paho_mqtt
-import json
-import time
-import os
 import threading
-import firebase_admin
-from firebase_admin import credentials, db, firestore
-from dotenv import load_dotenv
+import paho.mqtt.client as paho_mqtt
 
-load_dotenv()
-
-MQTT_BROKER = "localhost"
-MQTT_PORT = 1883
-MQTT_TOPIC_PRESENCE = "spottr/presence"
-MQTT_TOPIC_HEARTBEAT = "spottr/scanners/heartbeat"
-SCANNER_TIMEOUT = 60  # Set Timeout for Scanner
-BADGE_TIMEOUT = 60  # Set Timeout for Badge
-
-FIREBASE_DB_URL = os.getenv("FIREBASE_DB_URL")
-SERVICE_ACCOUNT = os.getenv("SERVICE_ACCOUNT")
-
-cred = credentials.Certificate(SERVICE_ACCOUNT)
-firebase_admin.initialize_app(cred, {
-	"databaseURL": FIREBASE_DB_URL
-})
-
-fs_client = firestore.client()  # Just making my life easier
-
-badge_locations = {}
-scanner_status = {}
-badge_last_seen = {}
-badge_registry = {}
-
-
-def load_badge_registry():
-	global badge_registry
-	registry_data = db.reference('badges').get()
-	if registry_data:
-		badge_registry = registry_data
-		print(f"Loaded {len(badge_registry)} badges from Firebase")
-	else:
-		print(f"No badges found in Firebase")
-
-
-def reload_registry_periodically():
-	while True:
-		time.sleep(60)
-		load_badge_registry()
-		print(f"Badge registry reloaded")
-
-
-def get_strongest_scanner(mac):
-	if mac not in badge_locations:
-		return None
-	readings = badge_locations[mac]
-	strongest = max(readings, key=readings.get)
-	return strongest
-
-
-def update_firebase(mac, scanner, rssi):
-	badge_info = badge_registry.get(mac, {})
-	owner = badge_info.get('owner', 'Unknown')
-	label = badge_info.get('label', mac)
-	strongest = get_strongest_scanner(mac)
-
-	usable_mac = mac.replace(':', '_')
-
-	db.reference(f"badge_location/{usable_mac}").set({
-		"mac": mac,
-		"owner": owner,
-		"label": label,
-		"room": strongest,
-		"rssi": rssi,
-		"last_seen": time.time(),
-		"status": "ONLINE"
-	})
-
-	fs_client.collection("presence_log").add({
-		"mac": mac,
-		"owner": owner,
-		"label": label,
-		"scanner": scanner,
-		"rssi": rssi,
-		"timestamp": int(time.time())
-	})
-
-
-def check_scanner_status():
-	while True:
-		now = time.time()
-		for scanner, last_seen in list(scanner_status.items()):
-			if now - last_seen > SCANNER_TIMEOUT:
-				print(f"{scanner} is OFFLINE")
-				db.reference(f"scanner_status/{scanner}").set({
-					"status": "OFFLINE",
-					"last_seen": int(last_seen)
-				})
-		time.sleep(30)
-
-
-def check_badge_status():
-	while True:
-		now = time.time()
-		for badge_id, last_seen in list(badge_last_seen.items()):
-			if now - last_seen > BADGE_TIMEOUT:
-				print(f"{badge_id} is OFFLINE")
-				usable_mac = badge_id.replace(":", "_")
-				db.reference(f"badge_location/{usable_mac}").update({
-					"status": "OFFLINE",
-					"last_seen": int(last_seen)
-				})
-		time.sleep(30)
-
-def on_connect(client, userdata, flags, result, properties):
-	if result == 0:
-		print(f"Connected to MQTT Broker!")
-		client.subscribe(MQTT_TOPIC_PRESENCE)
-		client.subscribe(MQTT_TOPIC_HEARTBEAT)
-		print(f"Subscribed to {MQTT_TOPIC_PRESENCE} and {MQTT_TOPIC_HEARTBEAT}")
-	else:
-		print(f"Failed to connect, return code: {result}")
-
-
-def on_message(client, userdata, message):
-	topic = message.topic
-	mqtt_message = json.loads(message.payload.decode())
-
-	if topic == MQTT_TOPIC_PRESENCE:
-		mac = mqtt_message["badge_id"]
-		scanner = mqtt_message["scanner"]
-		rssi = mqtt_message["rssi"]
-
-		if mac not in badge_registry:
-			print(f"Unregistered badge MAC: {mac} — ignoring")
-			return
-
-		badge_info = badge_registry[mac]
-		owner = badge_info.get("owner", "Unknown")
-		label = badge_info.get("label", mac)
-
-		if mac not in badge_locations:
-			badge_locations[mac] = {}
-
-		badge_locations[mac][scanner] = rssi
-		badge_last_seen[mac] = time.time()
-
-		strongest = get_strongest_scanner(mac)
-		print(f"BADGE: {label} ({owner}), ROOM: {strongest}, RSSI: {rssi}")
-
-		update_firebase(mac, scanner, rssi)
-
-	elif topic == MQTT_TOPIC_HEARTBEAT:
-		scanner = mqtt_message["scanner"]
-		scanner_status[scanner] = time.time()
-		print(f"{scanner} is ONLINE")
-
-		db.reference(f"scanner_status/{scanner}").set({
-			"status": "ONLINE",
-			"last_seen": int(time.time())
-		})
+import config
+from registry import load_badge_registry, load_scanner_registry, reload_registry_periodically
+from health import check_badge_status, ping_scanners, check_ping_responses
+from handlers import on_connect, on_message
 
 load_badge_registry()
+load_scanner_registry()
+
+client = paho_mqtt.Client(paho_mqtt.CallbackAPIVersion.VERSION2)
+client.on_connect = on_connect
+client.on_message = on_message
 
 # Used to check if the scanner is still online
-scanner_thread = threading.Thread(target=check_scanner_status, daemon=True)
-scanner_thread.start()
+# scanner_thread = threading.Thread(target=check_scanner_status, daemon=True)
+# scanner_thread.start()
 
 # Used to check if the badge is still online
 badge_thread = threading.Thread(target=check_badge_status, daemon=True)
@@ -172,9 +24,11 @@ badge_thread.start()
 registry_thread = threading.Thread(target=reload_registry_periodically, daemon=True)
 registry_thread.start()
 
-client = paho_mqtt.Client(paho_mqtt.CallbackAPIVersion.VERSION2)
-client.on_connect = on_connect
-client.on_message = on_message
+ping_thread = threading.Thread(target=ping_scanners, args=(client,), daemon=True)
+ping_thread.start()
 
-client.connect(MQTT_BROKER, MQTT_PORT)
+ping_check_thread = threading.Thread(target=check_ping_responses, daemon=True)
+ping_check_thread.start()
+
+client.connect(config.MQTT_BROKER, config.MQTT_PORT)
 client.loop_forever()
