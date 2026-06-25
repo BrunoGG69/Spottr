@@ -23,7 +23,11 @@ SPOTTR is an open-source indoor presence tracking system built on ESP32-C3 and B
 
 ---
 ## Renders
-![Badge Render](docs/SPOTTR_RENDER_COLLECTION.png)
+![SPOTTR_RENDER_COLLECTION.png](docs/SPOTTR_RENDER_COLLECTION.png)
+
+---
+## Flow Chart
+![SPOTTR_DIAGRAM.png](docs/SPOTTR_DIAGRAM.png)
 
 ---
 ## Getting Started
