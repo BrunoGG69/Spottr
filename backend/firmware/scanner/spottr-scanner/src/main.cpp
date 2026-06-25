@@ -3,16 +3,31 @@
 #include <NimBLEDevice.h>
 #include <PubSubClient.h>
 #include "secrets.h"
+#include <HTTPUpdate.h>
+#include <WiFiClientSecure.h>
 
 #define SCANNER_ID "scanner_living_room"
 #define MQTT_BROKER "192.168.1.57"
 #define MQTT_PORT 1883
 
+#define FW_MAJOR 1
+#define FW_MINOR 0
+#define FW_PATCH 0
+#define FIRMWARE_VERSION "1.0.0"
+
+bool isNewerVersion(const String& incoming){
+    int major = 0, minor = 0, patch = 0;
+    sscanf(incoming.c_str(), "%d.%d.%d", &major, &minor, &patch);
+    if (major != FW_MAJOR) return major > FW_MAJOR;
+    if (minor != FW_MINOR) return minor > FW_MINOR;
+    return patch > FW_PATCH;
+}
+
 WiFiClient wifiClient;
 PubSubClient mqtt(wifiClient); // name the MQTT client "mqtt" or anything can be used here
 NimBLEScan *pBLEScan;
 
-unsigned long lastHeartbeat = 0;
+// unsigned long lastHeartbeat = 0;
 String scannerMac;
 
 // Builds the ping topic this scanner listens on
@@ -26,6 +41,34 @@ String pongTopic()
 {
     return String("spottr/scanners/pong/") + SCANNER_ID;
 }
+
+// OTA Function to handle firmware updates
+void performOTA(const String& url){
+    Serial.println("Starting OTA from : " + url);
+
+    WiFiClientSecure client;
+    client.setInsecure(); // Skipped Cert Validation
+
+    httpUpdate.setLedPin(LED_BUILTIN, LOW);
+    httpUpdate.rebootOnUpdate(true);
+
+    t_httpUpdate_return ret = httpUpdate.update(client, url);
+
+    switch (ret){
+        case HTTP_UPDATE_FAILED:
+            Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
+            break;
+
+        case HTTP_UPDATE_NO_UPDATES:
+            Serial.println("HTTP_UPDATE_NO_UPDATES");
+            break;
+
+        case HTTP_UPDATE_OK:
+            Serial.println("HTTP_UPDATE_OK");
+            break;
+    }
+}
+
 
 // Function to connect to MQTT broker with retry logic
 void connectMQTT()
@@ -53,20 +96,20 @@ void connectMQTT()
     }
 }
 
-void sendHeartbeat()
-{
-    if (millis() - lastHeartbeat >= 30000)
-    {
-        String payload = "{\"scanner\":\"" SCANNER_ID "\","
-                         "\"mac\":\"" +
-                         scannerMac + "\","
-                                      "\"status\":\"online\","
-                                      "\"uptime\":" +
-                         String(millis() / 1000) + "}";
-        mqtt.publish("spottr/scanners/heartbeat", payload.c_str());
-        lastHeartbeat = millis();
-    }
-}
+// void sendHeartbeat()
+// {
+//     if (millis() - lastHeartbeat >= 30000)
+//     {
+//         String payload = "{\"scanner\":\"" SCANNER_ID "\","
+//                          "\"mac\":\"" +
+//                          scannerMac + "\","
+//                                       "\"status\":\"online\","
+//                                       "\"uptime\":" +
+//                          String(millis() / 1000) + "}";
+//         mqtt.publish("spottr/scanners/heartbeat", payload.c_str());
+//         lastHeartbeat = millis();
+//     }
+// }
 
 void sendPong()
 {
@@ -164,6 +207,4 @@ void loop()
         connectMQTT();
     }
     mqtt.loop();
-
-    sendHeartbeat();
 }

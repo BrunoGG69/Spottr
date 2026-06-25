@@ -151,4 +151,4 @@ Add your Firebase config to `.env` file. Check `.env.example` for reference.
 MIT License © 2026 Prathamesh Prabhakar
 
 ---
-**Note: Spottr is currently under active development. Hardware arriving June 7, 2026. Stay tuned.**
+**Note: Spottr is currently under active development. Stay tuned.**
