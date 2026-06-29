@@ -43,7 +43,7 @@ Spottr has four parts to set up: **Badges, Scanners, Pi Bridge**, and **Web Dash
  - Flash `spottr-badge-merged.bin` to each ESP32-C3 at offset `0x0` (Coming Soon)
  - Flash `spottr-scanner-merged.bin` to each ESP32-C6 at offset `0x0` (Coming Soon)
 
-**Method 2:** clone the repo and build the firmware yourself using PlatformIO
+**Method 2:** clone the repo and build the firmware yourself using [PlatformIO](https://platformio.org/)
 ```bash
 #badge
 cd backend/firmware/badge/spottr-badge
