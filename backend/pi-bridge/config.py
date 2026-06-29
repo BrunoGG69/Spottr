@@ -8,17 +8,17 @@ load_dotenv()
 print("SERVICE_ACCOUNT =", os.getenv("SERVICE_ACCOUNT"))
 print("FIREBASE_DB_URL =", os.getenv("FIREBASE_DB_URL"))
 
-MQTT_BROKER = "localhost"
-MQTT_PORT = 1883
+MQTT_BROKER = os.getenv("MQTT_BROKER")
+MQTT_PORT = os.getenv("MQTT_PORT")
 
-MQTT_TOPIC_PRESENCE = "spottr/presence"
-MQTT_TOPIC_HEARTBEAT = "spottr/scanners/heartbeat"
-MQTT_TOPIC_STATUS = "spottr/scanners/status"
+MQTT_TOPIC_PRESENCE = os.getenv("MQTT_TOPIC_PRESENCE")
+MQTT_TOPIC_HEARTBEAT = os.getenv("MQTT_TOPIC_HEARTBEAT")
+MQTT_TOPIC_STATUS = os.getenv("MQTT_TOPIC_STATUS")
 
-SCANNER_TIMEOUT = 60  # Set Timeout for Scanner
-BADGE_TIMEOUT = 60  # Set Timeout for Badge
-PING_INTERVAL = 15 # Set Ping Interval
-PONG_TIMEOUT = 5 # Set Pong Interval
+SCANNER_TIMEOUT = os.getenv("SCANNER_TIMEOUT") # Set Timeout for Scanner from .env
+BADGE_TIMEOUT = os.getenv("BADGE_TIMEOUT")  # Set Timeout for Badge from .env
+PING_INTERVAL = os.getenv("PING_INTERVAL") # Set Ping Interval from .env
+PONG_TIMEOUT = os.getenv("PONG_TIMEOUT") # Set Pong Interval from .env
 
 FIREBASE_DB_URL = os.getenv("FIREBASE_DB_URL")
 SERVICE_ACCOUNT = os.getenv("SERVICE_ACCOUNT")

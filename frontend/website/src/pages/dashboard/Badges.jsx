@@ -83,17 +83,45 @@ export default function Badges() {
         <div>
             <div className="mb-6 flex items-center justify-between">
                 <div>
-                    <h1 className="text-white text-2xl font-bold">Badges</h1>
+                    {/*<h1 className="text-white text-2xl font-bold">Badges</h1>*/}
                     <p className="text-white/40 text-sm mt-1">Manage registered badges</p>
                 </div>
 
-                <button
-                    onClick={() => setShowAddForm(true)}
-                    className="bg-cyan-500 text-black font-semibold px-4 py-2 rounded-lg text-sm hover:bg-cyan-400"
-                >
-                    + Add badge
-                </button>
+
+                <div className="flex items-center gap-3 flex-1 justify-end">
+                    <div className="relative w-full max-w-xs">
+                        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" fill="none"
+                             viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            <path strokeLinecap="round" strokeLinejoin="round"
+                                  d="M21 21l-4.35-4.35M17 11a6 6 0 11-12 0 6 6 0 0112 0z"/>
+                        </svg>
+                        <input
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder="Search Badges"
+                            className="w-full pl-9 pr-9 py-2 bg-white/4 border border-white/10 rounded-lg text-white text-sm placeholder:text-white/30 focus:outline-none focus:ring-1 focus:ring-cyan-500"
+                        />
+                        {search && (
+                            <button
+                                onClick={() => setSearch('')}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60"
+                            >
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                                     strokeWidth={2}>
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        )}
+                    </div>
+                    <button
+                        onClick={() => setShowAddForm(true)}
+                        className="bg-cyan-500 text-black font-semibold px-4 py-2 rounded-lg text-sm hover:bg-cyan-400"
+                    >
+                        + Add badge
+                    </button>
+                </div>
             </div>
+
 
             <div className="bg-white/3 border border-white/8 rounded-xl overflow-x-auto">
                 <table className="w-full text-sm min-w-160">
@@ -111,7 +139,7 @@ export default function Badges() {
                     <tbody>
                     {badgeEntries.length === 0 ? (
                         <tr>
-                            <td colSpan={6} className="text-center text-white/30 py-8">
+                            <td colSpan={7} className="text-center text-white/30 py-8">
                                 No badges registered yet
                             </td>
                         </tr>
