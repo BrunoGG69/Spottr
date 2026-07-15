@@ -31,7 +31,7 @@ def check_badge_status():
 
 def ping_scanners(client):
     while True:
-        for scanner_id in list(state.scanner_status.keys()):
+        for scanner_id in list(state.scanner_registry.keys()):
             topic = f"spottr/scanners/ping/{scanner_id}"
             client.publish(topic, "{}")
             state.pending_pings[scanner_id] = time.time()

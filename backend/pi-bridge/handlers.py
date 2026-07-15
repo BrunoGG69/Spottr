@@ -24,7 +24,7 @@ def on_message(client, userdata, message):
 	if topic == MQTT_TOPIC_PRESENCE:
 		mac = mqtt_message["badge_id"]
 		scanner = mqtt_message["scanner"]
-		rssi = mqtt_message["RSSI"]
+		rssi = mqtt_message["rssi"]
 
 		if mac not in state.badge_registry:
 			print(f"Unregistered badge MAC: {mac} — ignoring")

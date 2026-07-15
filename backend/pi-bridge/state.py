@@ -6,3 +6,4 @@ badge_registry = {}
 scanner_registry = {}
 pending_pings = {}
 pong_received = {}
+last_firmware_version = None
