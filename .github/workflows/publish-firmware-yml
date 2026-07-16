@@ -1,0 +1,55 @@
+name: Publish firmware to Firebase
+
+on:
+  release:
+    types: [released]
+
+jobs:
+  push-to-firebase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Extract release info
+        id: info
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          VERSION="${TAG#scanner-v}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+          URL=$(echo '${{ toJSON(github.event.release.assets) }}' \
+            | jq -r '.[] | select(.name | endswith(".bin")) | .browser_download_url' \
+            | head -n1)
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+
+      - name: Guard — only scanner releases
+        if: ${{ !startsWith(github.event.release.tag_name, 'scanner-v') }}
+        run: |
+          echo "Not a scanner release, skipping."
+          exit 0
+
+      - name: Write to Firebase
+        env:
+          SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          DB_URL: ${{ secrets.FIREBASE_DB_URL }}
+          VERSION: ${{ steps.info.outputs.version }}
+          BIN_URL: ${{ steps.info.outputs.url }}
+        run: |
+          echo "$SA" > /tmp/sa.json
+          pip install requests google-auth
+          python3 - <<'PY'
+          import os, json, requests
+          from google.oauth2 import service_account
+          from google.auth.transport.requests import Request
+
+          creds = service_account.Credentials.from_service_account_file(
+              "/tmp/sa.json",
+              scopes=["https://www.googleapis.com/auth/firebase.database",
+                      "https://www.googleapis.com/auth/userinfo.email"])
+          creds.refresh(Request())
+
+          db = os.environ["DB_URL"].rstrip("/")
+          payload = {"version": os.environ["VERSION"], "url": os.environ["BIN_URL"]}
+          r = requests.put(f"{db}/firmware/scanner.json?access_token={creds.token}",
+                           data=json.dumps(payload))
+          r.raise_for_status()
+          print("Wrote to Firebase:", payload)
+          PY
