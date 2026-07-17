@@ -1,4 +1,5 @@
 #include "ota/ota.h"
+#include "led/led.h"
 #include "globals.h"
 #include <HTTPUpdate.h>
 #include <WiFiClientSecure.h>
@@ -51,6 +52,7 @@ static void performOTA(const String &url){
     client.setInsecure();
 
     httpUpdate.rebootOnUpdate(true);
+    httpUpdate.setFollowRedirects(HTTPC_FORCE_FOLLOW_REDIRECTS);
 
     t_httpUpdate_return ret = httpUpdate.update(client, url);
 
@@ -73,6 +75,7 @@ void serviceOTA(){
     if (otaPending){
         if (!otaPending) return;
         otaPending = false;
+        ledSet(LED_OTA);
         Serial.println("Starting OTA to version " + otaVersion);
         performOTA(otaUrl);
     }

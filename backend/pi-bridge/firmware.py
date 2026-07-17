@@ -12,7 +12,7 @@ def publish_firmware(client, info):
     payload = json.dumps({
         "version": info.get("version"),
         "url": info.get("url"),
-    })
+    }, separators=(',', ':'))
     client.publish(MQTT_TOPIC_OTA, payload, retain=True)
     print(f"Published firmware {info.get('version')} to scanners")
 

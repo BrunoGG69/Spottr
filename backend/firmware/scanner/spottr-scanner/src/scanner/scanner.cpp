@@ -1,5 +1,6 @@
 #include "scanner/scanner.h"
 #include "ota/ota.h"
+#include "led/led.h"
 #include "globals.h"
 
 String pingTopic()
@@ -27,8 +28,8 @@ bool tryConnectSavedWiFi(unsigned long timeoutMs)
     unsigned long start = millis();
     while (WiFi.status() != WL_CONNECTED && millis() - start < timeoutMs)
     {
-        delay(500);
-        Serial.print(".");
+        ledUpdate();
+        delay(50);
     }
 
     if (WiFi.status() == WL_CONNECTED)
@@ -93,7 +94,11 @@ void connectMQTT()
         else
         {
             Serial.printf("failed rc=%d retrying in 3s\n", mqtt.state());
-            delay(3000);
+            for (int i = 0; i < 60; i++)
+            {
+                ledUpdate();
+                delay(50);
+            }
         }
     }
 }

@@ -4,6 +4,7 @@
 #include "scanner/scanner.h"
 #include "portal/portal.h"
 #include "config/config.h"
+#include "led/led.h"
 
 WiFiClient wifiClient;
 PubSubClient mqtt(wifiClient);
@@ -61,12 +62,16 @@ void setup()
     Serial.println();
     Serial.println("Spottr Scanner — firmware " FIRMWARE_VERSION);
 
+    ledInit();
+    ledSet(LED_CONNECTING);
+
     loadConfig();
 
     if (!setupDone)
     {
         Serial.println("Setup not complete — opening config portal.");
         dumpStoredConfig("boot");
+        ledSet(LED_PORTAL);
         startConfigPortal();
         return;
     }
@@ -80,12 +85,14 @@ void setup()
         preferences.end();
         setupStep = 0;
         setupDone = false;
+        ledSet(LED_PORTAL);
         startConfigPortal();
         return;
     }
 
     if (!tryConnectSavedWiFi(10000))
     {
+        ledSet(LED_PORTAL);
         startConfigPortal();
         return;
     }
@@ -95,6 +102,7 @@ void setup()
     Serial.println("Scanner ID: " + scannerId);
     Serial.println("Room: " + roomName);
     Serial.println("MQTT Broker: " + mqttBroker + ":" + String(mqttPort));
+    Serial.println("OTA Worked Properly");
 
     delay(1000);
 
@@ -106,14 +114,21 @@ void loop()
     if (configPortalActive)
     {
         handlePortalLoop();
+        ledUpdate();
         return;
     }
 
     if (!mqtt.connected())
     {
+        ledSet(LED_CONNECTING);
         connectMQTT();
+    }
+    else
+    {
+        ledSet(LED_ONLINE);
     }
     mqtt.loop();
 
     serviceOTA();
+    ledUpdate();
 }
