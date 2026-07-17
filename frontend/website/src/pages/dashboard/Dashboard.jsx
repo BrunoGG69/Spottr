@@ -4,7 +4,7 @@ import {db} from '../../firebase.js'
 import FloorMap, {getTotalRooms} from '../../components/dashboard/FloorMap.jsx'
 import StatCard from '../../components/dashboard/StatCard.jsx'
 
-const STATUS_THRESHOLD = 60
+const STATUS_THRESHOLD = 90
 
 function isRecentlyOnline(lastSeen) {
     if (!lastSeen) return false;
@@ -34,7 +34,7 @@ export default function Dashboard() {
     }, []);
 
     const onlineBadges = Object.values(badgeLocations).filter(b => isRecentlyOnline(b.last_seen)).length
-    const onlineScanners = Object.values(scannerStatus).filter(s => isRecentlyOnline(s.last_seen)).length
+    const onlineScanners = Object.values(scannerStatus).filter(s => s.status === 'ONLINE').length
     const totalBadges = Object.keys(badgeLocations).length
     const totalScanners = Object.keys(scannerStatus).length
     const totalRooms = getTotalRooms()
