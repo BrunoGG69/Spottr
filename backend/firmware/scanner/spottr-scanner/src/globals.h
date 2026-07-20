@@ -10,11 +10,13 @@
 #define DEFAULT_SCANNER_ID "scanner_node"
 #define DEFAULT_MQTT_BROKER "192.168.0.12"
 #define DEFAULT_MQTT_PORT 1883
+#define DEFAULT_MQTT_USER ""
+#define DEFAULT_MQTT_PASS ""
 
 #define FW_MAJOR 0
-#define FW_MINOR 7
+#define FW_MINOR 8
 #define FW_PATCH 0
-#define FIRMWARE_VERSION "0.7.0"
+#define FIRMWARE_VERSION "0.8.0"
 
 extern PubSubClient mqtt;
 extern Preferences preferences;
@@ -29,6 +31,8 @@ extern String wifiSsid;
 extern String wifiPass;
 extern String mqttBroker;
 extern uint16_t mqttPort;
+extern String mqttUser;
+extern String mqttPass;
 extern uint8_t setupStep;
 extern bool setupDone;
 extern bool configPortalActive;

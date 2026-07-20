@@ -76,7 +76,14 @@ void connectMQTT()
     while (!mqtt.connected())
     {
         Serial.print("Connecting To MQTT...");
-        if (mqtt.connect(scannerId.c_str()))
+
+        bool ok;
+        if (mqttUser.length() > 0)
+            ok = mqtt.connect(scannerId.c_str(), mqttUser.c_str(), mqttPass.c_str());
+        else
+            ok = mqtt.connect(scannerId.c_str());
+
+        if (ok)
         {
             Serial.println("Connected!");
 

@@ -19,6 +19,8 @@ String roomName;
 String wifiSsid;
 String wifiPass;
 String mqttBroker;
+String mqttUser;
+String mqttPass;
 uint16_t mqttPort = DEFAULT_MQTT_PORT;
 uint8_t setupStep = 0;
 bool setupDone = false;

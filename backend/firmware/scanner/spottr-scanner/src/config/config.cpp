@@ -1,5 +1,6 @@
 #include "config/config.h"
 #include "globals.h"
+#include <esp_mac.h>
 
 String slugify(const String &input)
 {
@@ -26,6 +27,8 @@ void dumpStoredConfig(const char *stage)
     Serial.println("  pass        : " + String(preferences.getString("pass", "").length() ? "<saved>" : "<unset>"));
     Serial.println("  broker      : " + preferences.getString("broker", "<unset>"));
     Serial.println("  port        : " + String(preferences.getUInt("port", 0)));
+    Serial.println("  mqtt_user   : " + preferences.getString("mqtt_user", "<unset>"));
+    Serial.println("  mqtt_pass   : " + String(preferences.getString("mqtt_pass", "").length() ? "<saved>" : "<unset>"));
     Serial.println("  setup_done  : " + String(preferences.getBool("setup_done", false) ? "true" : "false"));
     Serial.println("--------------------------------");
     preferences.end();
@@ -40,6 +43,8 @@ void loadConfig()
     wifiPass = preferences.getString("pass", "");
     mqttBroker = preferences.getString("broker", DEFAULT_MQTT_BROKER);
     mqttPort = preferences.getUInt("port", DEFAULT_MQTT_PORT);
+    mqttUser = preferences.getString("mqtt_user", DEFAULT_MQTT_USER);
+    mqttPass = preferences.getString("mqtt_pass", DEFAULT_MQTT_PASS);
     setupStep = preferences.getUInt("step", 0);
     setupDone = preferences.getBool("setup_done", false);
     preferences.end();
@@ -48,7 +53,7 @@ void loadConfig()
 String buildApName()
 {
     uint8_t mac[6];
-    WiFi.macAddress(mac);
+    esp_read_mac(mac, ESP_MAC_WIFI_STA);
     char suffix[5];
     snprintf(suffix, sizeof(suffix), "%02X%02X", mac[4], mac[5]);
     return String("Spottr-Scanner-") + String(suffix);

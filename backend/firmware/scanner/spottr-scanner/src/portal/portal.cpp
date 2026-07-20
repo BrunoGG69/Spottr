@@ -187,7 +187,7 @@ static void handleWifiSave()
 static void handleMqttForm()
 {
     String b = "<p class='eyebrow'>Step 3 of 4</p><h1>MQTT broker</h1>"
-               "<p class='sub'>Where the Raspberry Pi bridge is listening.</p>" +
+               "<p class='sub'>Where the Spottr bridge is listening.</p>" +
                stepDots(3) +
                "<form action='/mqtt' method='POST'>"
                "<label for='broker'>Broker address</label>"
@@ -196,6 +196,12 @@ static void handleMqttForm()
                "<label for='port'>Port</label>"
                "<input type='number' id='port' name='port' min='1' max='65535' "
                "value='" + String(mqttPort) + "'>"
+               "<label for='mqtt_user'>Username</label>"
+               "<input type='text' id='mqtt_user' name='mqtt_user' autocomplete='off' "
+               "value='" + mqttUser + "'>"
+               "<label for='mqtt_pass'>Password</label>"
+               "<input type='password' id='mqtt_pass' name='mqtt_pass' autocomplete='new-password'>"
+               "<p class='hint'>" + String(mqttPass.length() ? "Leave blank to keep the saved password." : "Leave blank if your broker allows anonymous access.") + "</p>"
                "<button type='submit'>Continue</button></form>";
     portalServer.send(200, "text/html", pageShell(b));
 }
@@ -220,9 +226,17 @@ static void handleMqttSave()
     }
     mqttPort = port;
 
+    mqttUser = portalServer.arg("mqtt_user");
+    mqttUser.trim();
+
+    String newPass = portalServer.arg("mqtt_pass");
+    if (newPass.length() > 0) mqttPass = newPass;
+
     preferences.begin("spottr-cfg", false);
     preferences.putString("broker", mqttBroker);
     preferences.putUInt("port", mqttPort);
+    preferences.putString("mqtt_user", mqttUser);
+    preferences.putString("mqtt_pass", mqttPass);
     preferences.putUInt("step", 3);
     preferences.end();
     setupStep = 3;
@@ -244,6 +258,7 @@ static void handleConfirm()
                "<div class='row'><span>Scanner ID</span><span>" + scannerId + "</span></div>"
                "<div class='row'><span>Network</span><span>" + wifiSsid + "</span></div>"
                "<div class='row'><span>Broker</span><span>" + mqttBroker + ":" + String(mqttPort) + "</span></div>"
+               "<div class='row'><span>MQTT auth</span><span>" + String(mqttUser.length() ? mqttUser + " / ••••••" : "anonymous") + "</span></div>"
                "<div class='row'><span>MAC</span><span>" + WiFi.macAddress() + "</span></div>"
                "<div class='row'><span>Firmware</span><span>" FIRMWARE_VERSION "</span></div>"
                "</div>"

@@ -34,5 +34,8 @@ ping_thread.start()
 ping_check_thread = threading.Thread(target=check_ping_responses, daemon=True)
 ping_check_thread.start()
 
+if config.MQTT_USER:
+    client.username_pw_set(config.MQTT_USER, config.MQTT_PASS)
+
 client.connect(config.MQTT_BROKER, config.MQTT_PORT)
 client.loop_forever()

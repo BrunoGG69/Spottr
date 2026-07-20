@@ -9,7 +9,9 @@ print("SERVICE_ACCOUNT =", os.getenv("SERVICE_ACCOUNT"))
 print("FIREBASE_DB_URL =", os.getenv("FIREBASE_DB_URL"))
 
 MQTT_BROKER = os.getenv("MQTT_BROKER")
-MQTT_PORT = int(os.getenv("MQTT_PORT"))
+MQTT_PORT = int(os.getenv("MQTT_PORT", 1883))
+MQTT_USER = os.getenv("MQTT_USER")
+MQTT_PASS = os.getenv("MQTT_PASS")
 
 MQTT_TOPIC_PRESENCE = os.getenv("MQTT_TOPIC_PRESENCE")
 MQTT_TOPIC_HEARTBEAT = os.getenv("MQTT_TOPIC_HEARTBEAT")
