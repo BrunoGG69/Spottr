@@ -1,4 +1,7 @@
-import {useState} from 'react'
+import {useState, useRef} from 'react'
+import {motion, AnimatePresence} from 'framer-motion'
+import {isBadgeOnline, isScannerOnline} from '@/lib/status.js'
+import {macToLocationKey} from '@/lib/badges.js'
 
 const ROOMS = [
     {
@@ -51,16 +54,16 @@ const ROOMS = [
     },
 ]
 
+const BASE = {x: 290, y: 20, w: 630, h: 910}
+const MIN_W = BASE.w * 0.25
+const MAX_W = BASE.w * 1.4
+
 export function getTotalRooms() {
     return ROOMS.length
 }
 
-const viewBox = '290 20 630 910'
-const STATUS_THRESHOLD = 90
-
-function isRecentlyOnline(lastSeen) {
-    if (!lastSeen) return false;
-    return (Date.now() / 1000) - lastSeen < STATUS_THRESHOLD
+export function scannerToRoomName(scannerId) {
+    return ROOMS.find(r => r.scannerId === scannerId)?.name || scannerId
 }
 
 function getPolygonCenter(pointsStr) {
@@ -68,116 +71,273 @@ function getPolygonCenter(pointsStr) {
         const [x, y] = p.split(',').map(Number)
         return {x, y}
     })
-    const cent_x = pts.reduce((sum, p) => sum + p.x, 0) / pts.length
-    const cent_y = pts.reduce((sum, p) => sum + p.y, 0) / pts.length
-    return {x: cent_x, y: cent_y}
+    return {
+        x: pts.reduce((sum, p) => sum + p.x, 0) / pts.length,
+        y: pts.reduce((sum, p) => sum + p.y, 0) / pts.length,
+    }
 }
 
-export default function FloorMap({badgeLocations = {}, scannerStatus = {}}) {
-    const [hoveredRoom, setHoveredRoom] = useState(null)
-    const [selectedRoom, setSelectedRoom] = useState(null)
-    const [mousePosition, setMousePosition] = useState({x: 0, y: 0})
+function roomStyle(info) {
+    if (info.badges.length) return {
+        fill: 'rgba(100,210,255,0.12)',
+        stroke: 'rgba(100,210,255,0.55)',
+        text: 'rgba(160,225,255,0.90)',
+    }
+    if (info.isOnline) return {
+        fill: 'rgba(255,255,255,0.05)',
+        stroke: 'rgba(255,255,255,0.22)',
+        text: 'rgba(255,255,255,0.50)',
+    }
+    if (info.scannerId) return {
+        fill: 'rgba(255,69,58,0.05)',
+        stroke: 'rgba(255,69,58,0.30)',
+        text: 'rgba(255,255,255,0.30)',
+    }
+    return {
+        fill: 'rgba(255,255,255,0.022)',
+        stroke: 'rgba(255,255,255,0.09)',
+        text: 'rgba(255,255,255,0.22)',
+    }
+}
+
+function clampView(v) {
+    const nw = Math.min(MAX_W, Math.max(MIN_W, v.w))
+    const factor = nw / v.w
+    return {...v, w: nw, h: v.h * factor}
+}
+
+function ZoomButton({onClick, label, children}) {
+    return (
+        <button
+            onClick={onClick}
+            aria-label={label}
+            className="grid h-7 w-7 place-items-center rounded-lg border border-line bg-surface-2
+                       text-sm text-text-2 transition-colors hover:border-line-strong hover:text-text"
+        >
+            {children}
+        </button>
+    )
+}
+
+export default function FloorMap({registry = {}, badgeLocations = {}, scannerStatus = {}, className = ''}) {
+    const [activeRoom, setActiveRoom] = useState(null)
+    const [view, setView] = useState(BASE)
+    const [panning, setPanning] = useState(false)
+    const svgRef = useRef(null)
+    const panRef = useRef(null)
+
+    const z = BASE.w / view.w
 
     const badgesByRoom = {}
-    Object.entries(badgeLocations).forEach(([, data]) => {
-        const room = ROOMS.find(r => r.scannerId === data.room)
-        if (room) {
-            if (!badgesByRoom[room.id]) badgesByRoom[room.id] = []
-            badgesByRoom[room.id].push(data)
-        }
+    Object.entries(registry).forEach(([mac, badge]) => {
+        if (!badge.active) return
+        const loc = badgeLocations[macToLocationKey(mac)]
+        if (!loc || !isBadgeOnline(loc)) return
+        const room = ROOMS.find(r => r.scannerId === loc.room)
+        if (!room) return
+        if (!badgesByRoom[room.id]) badgesByRoom[room.id] = []
+        badgesByRoom[room.id].push({mac, ...badge, ...loc})
     })
 
     function getRoomInfo(room) {
-        const isOnline = room.scannerId && isRecentlyOnline(scannerStatus[room.scannerId]?.last_seen)
-        const badges = badgesByRoom[room.id] || []
-        return {...room, isOnline, badges}
+        const isOnline = Boolean(room.scannerId) && isScannerOnline(scannerStatus[room.scannerId])
+        return {...room, isOnline, badges: badgesByRoom[room.id] || []}
     }
 
-    const activeRoom = selectedRoom ? getRoomInfo(ROOMS.find(r => r.id === selectedRoom)) : null
+    const activeInfo = activeRoom
+        ? getRoomInfo(ROOMS.find(r => r.id === activeRoom))
+        : null
 
-    console.log('badgeLocations prop:', badgeLocations)
-    console.log('badgesByRoom:', badgesByRoom)
+    function handleWheel(e) {
+        e.preventDefault()
+        const rect = svgRef.current.getBoundingClientRect()
+        const scale = e.deltaY > 0 ? 1.12 : 1 / 1.12
+        const px = (e.clientX - rect.left) / rect.width
+        const py = (e.clientY - rect.top) / rect.height
+
+        setView(v => {
+            const next = clampView({...v, w: v.w * scale, h: v.h * scale})
+            return {
+                x: v.x + (v.w - next.w) * px,
+                y: v.y + (v.h - next.h) * py,
+                w: next.w,
+                h: next.h,
+            }
+        })
+    }
+
+    function zoomBy(scale) {
+        setView(v => {
+            const next = clampView({...v, w: v.w * scale, h: v.h * scale})
+            return {
+                x: v.x + (v.w - next.w) / 2,
+                y: v.y + (v.h - next.h) / 2,
+                w: next.w,
+                h: next.h,
+            }
+        })
+    }
+
+    function handlePointerDown(e) {
+        panRef.current = {
+            px: e.clientX,
+            py: e.clientY,
+            view: {...view},
+            rect: svgRef.current.getBoundingClientRect(),
+            moved: false,
+        }
+        setPanning(true)
+    }
+
+    function handlePointerMove(e) {
+        const p = panRef.current
+        if (!p) return
+
+        const dx = e.clientX - p.px
+        const dy = e.clientY - p.py
+        if (Math.abs(dx) > 3 || Math.abs(dy) > 3) p.moved = true
+
+        setView({
+            ...p.view,
+            x: p.view.x - (dx / p.rect.width) * p.view.w,
+            y: p.view.y - (dy / p.rect.height) * p.view.h,
+        })
+    }
+
+    function handlePointerUp() {
+        setPanning(false)
+        setTimeout(() => {
+            panRef.current = null
+        }, 0)
+    }
+
+    function handleRoomClick(roomId) {
+        if (panRef.current?.moved) return
+        setActiveRoom(prev => prev === roomId ? null : roomId)
+    }
 
     return (
-        <div className="bg-white/2 border-white/8 rounded 2xl p-4">
-            <div className="flex flex-col lg:flex-row gap-4">
-                <div className="relative flex-1">
-                    <svg viewBox={viewBox} className="w-full h-screen">
-                        {ROOMS.map(room => {
-                            const info = getRoomInfo(room)
-                            const isHovered = hoveredRoom === room.id
-                            const center = getPolygonCenter(room.points)
-                            return (
-                                <g key={room.id}>
-                                    <polygon
-                                        points={room.points}
-                                        fill={info.isOnline ? 'rgba(6,182,212,0.18)' : 'rgba(255,255,255,0.05)'}
-                                        stroke={info.isOnline ? 'rgba(6,182,212,0.7)' : 'rgba(255,255,255,0.15)'}
-                                        strokeWidth={isHovered ? 3 : 2}
-                                        style={{cursor: 'pointer', transition: 'stroke-width 0.15s, fill 0.2s'}}
-                                        onMouseEnter={() => setHoveredRoom(room.id)}
-                                        onMouseLeave={() => setHoveredRoom(null)}
-                                        onMouseMove={(e) => {
-                                            const rect = e.currentTarget.ownerSVGElement.getBoundingClientRect()
-                                            setMousePosition({
-                                                x: e.clientX - rect.left,
-                                                y: e.clientY - rect.top,
-                                            })
-                                        }}
-                                        onClick={() => setSelectedRoom(room.id)}
-                                    />
-                                    <text
-                                        x={center.x}
-                                        y={center.y}
-                                        textAnchor="middle"
-                                        fontSize="14"
-                                        fill={info.isOnline ? '#7dd3e8' : 'rgba(255,255,255,0.45)'}
-                                        fontFamily="sans-serif"
-                                        style={{pointerEvents: 'none'}}
-                                    >
-                                        {room.name}
-                                    </text>
+        <div className={`rounded-xl bg-surface-1 p-4 ${className}`}>
+            <div className="relative h-full w-full">
+                <svg
+                    ref={svgRef}
+                    viewBox={`${view.x} ${view.y} ${view.w} ${view.h}`}
+                    preserveAspectRatio="xMidYMid meet"
+                    className="h-full w-full touch-none select-none"
+                    style={{cursor: panning ? 'grabbing' : 'grab'}}
+                    onWheel={handleWheel}
+                    onPointerDown={handlePointerDown}
+                    onPointerMove={handlePointerMove}
+                    onPointerUp={handlePointerUp}
+                    onPointerLeave={handlePointerUp}
+                    onPointerCancel={handlePointerUp}
+                >
+                    {ROOMS.map(room => {
+                        const info = getRoomInfo(room)
+                        const isActive = activeRoom === room.id
+                        const center = getPolygonCenter(room.points)
+                        const s = roomStyle(info)
+
+                        return (
+                            <g key={room.id}>
+                                <motion.polygon
+                                    points={room.points}
+                                    strokeWidth={1.5 / z}
+                                    animate={{
+                                        fill: s.fill,
+                                        stroke: isActive ? 'rgba(255,255,255,0.45)' : s.stroke,
+                                    }}
+                                    transition={{duration: 0.25}}
+                                    onPointerUp={() => handleRoomClick(room.id)}
+                                />
+
+                                <motion.text
+                                    x={center.x}
+                                    y={center.y}
+                                    textAnchor="middle"
+                                    fontSize={18 / z}
+                                    letterSpacing={1 / z}
+                                    fontFamily="ui-monospace, SFMono-Regular, Menlo, monospace"
+                                    animate={{fill: s.text}}
+                                    transition={{duration: 0.25}}
+                                    style={{pointerEvents: 'none'}}
+                                >
+                                    {room.name.toUpperCase()}
+                                </motion.text>
+
+                                <AnimatePresence>
                                     {info.badges.map((badge, i) => (
-                                        <circle
+                                        <motion.circle
                                             key={badge.mac}
-                                            cx={center.x + (i % 3) * 24 - 24}
-                                            cy={center.y + 22 + Math.floor(i / 3) * 24}
-                                            r="9"
-                                            fill="#8B5CF6"
-                                            stroke="white"
-                                            strokeWidth="2"
-                                            style={{pointerEvents: 'none'}}
+                                            cx={center.x + ((i % 3) * 24 - 24) / z}
+                                            cy={center.y + (26 + Math.floor(i / 3) * 24) / z}
+                                            r={6 / z}
+                                            fill="var(--color-brand)"
+                                            initial={{scale: 0, opacity: 0}}
+                                            animate={{scale: 1, opacity: 1}}
+                                            exit={{scale: 0, opacity: 0}}
+                                            transition={{type: 'spring', stiffness: 500, damping: 25}}
+                                            style={{
+                                                pointerEvents: 'none',
+                                                transformOrigin: 'center',
+                                                transformBox: 'fill-box',
+                                            }}
                                         />
                                     ))}
-                                </g>
-                            )
-                        })}
-                    </svg>
+                                </AnimatePresence>
+                            </g>
+                        )
+                    })}
+                </svg>
 
-                    {hoveredRoom && (
-                        <div
-                            className="absolute bg-[#0d0d0d] border border-white/15 rounded-lg px-3 py-2 pointer-events-none z-10 min-w-40"
-                            style={{left: mousePosition.x + 14, top: mousePosition.y + 14}}
-                        >
-                            {(() => {
-                                const info = getRoomInfo(ROOMS.find(r => r.id === hoveredRoom))
-                                return (
-                                    <>
-                                        <p className="text-white text-sm font-medium m-0">{info.name}</p>
-                                        <p className={`text-xs mt-1 m-0 ${info.isOnline ? 'text-cyan-400' : 'text-white/40'}`}>
-                                            {info.scannerId ? (info.isOnline ? 'Scanner online' : 'Scanner offline') : 'No scanner'}
-                                        </p>
-                                        <p className="text-xs text-white/50 mt-1 m-0">
-                                            {info.badges.length ? info.badges.map(b => b.owner).join(', ') : 'No one here'}
-                                        </p>
-                                    </>
-                                )
-                            })()}
-                        </div>
-                    )}
+                <div className="absolute right-2 top-2 flex flex-col gap-1">
+                    <ZoomButton onClick={() => zoomBy(1 / 1.3)} label="Zoom in">+</ZoomButton>
+                    <ZoomButton onClick={() => zoomBy(1.3)} label="Zoom out">−</ZoomButton>
+                    <ZoomButton onClick={() => setView(BASE)} label="Reset view">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"
+                             strokeLinecap="round" className="h-3.5 w-3.5">
+                            <path
+                                d="M3 9V5a2 2 0 012-2h4M21 9V5a2 2 0 00-2-2h-4M3 15v4a2 2 0 002 2h4M21 15v4a2 2 0 01-2 2h-4"/>
+                        </svg>
+                    </ZoomButton>
                 </div>
+
+                <AnimatePresence>
+                    {activeInfo && (
+                        <motion.div
+                            key={activeRoom}
+                            className="pointer-events-none absolute inset-x-2 bottom-2 rounded-lg border border-line bg-surface-2 px-3 py-2.5 sm:inset-x-auto sm:left-2 sm:max-w-64"
+                            initial={{opacity: 0, y: 6}}
+                            animate={{opacity: 1, y: 0}}
+                            exit={{opacity: 0, y: 6}}
+                            transition={{duration: 0.15}}
+                        >
+                            <p className="m-0 text-sm text-text">{activeInfo.name}</p>
+
+                            <div className="mt-2 flex items-center gap-2">
+                                <span
+                                    className="h-1.5 w-1.5 rounded-full"
+                                    style={{
+                                        background: !activeInfo.scannerId ? 'var(--color-text-3)'
+                                            : activeInfo.isOnline ? 'var(--color-ok)'
+                                                : 'var(--color-bad)'
+                                    }}
+                                />
+                                <span className="label-mono">
+                                    {!activeInfo.scannerId ? 'No scanner'
+                                        : activeInfo.isOnline ? 'Online' : 'Offline'}
+                                </span>
+                            </div>
+
+                            <p className="m-0 mt-2 text-sm text-text-2">
+                                {activeInfo.badges.length
+                                    ? activeInfo.badges.map(b => b.owner).join(', ')
+                                    : 'Empty'}
+                            </p>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
         </div>
     )
-
 }

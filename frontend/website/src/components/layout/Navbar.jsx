@@ -36,7 +36,7 @@ export default function Navbar({visible}) {
                     className="relative flex items-center justify-between bg-[#0d0d0d]/90 backdrop-blur-md border border-white/10 rounded-full px-6 py-3">
 
                     {/*Logo - Desktop*/}
-                    <a href="#home"
+                    <a href="/"
                        className="flex items-center gap-2 md:relative absolute left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0">
                         <img src="/SPOTTR_LOGO_ONLY.svg" alt="SPOTTR LOGO" className="h-7 w-7"/>
                         <span className="text-white font-bold font-[SavedByZero] tracking-widest text-sm">SPOTTR</span>

@@ -1,8 +1,9 @@
 import {useState} from 'react'
 import {useAuth} from '../../context/AuthContext.jsx'
 import {Link, useNavigate} from 'react-router-dom'
-import {auth} from '../../firebase.js'
+import {auth} from '@/firebase.js'
 import {GoogleAuthProvider, signInWithPopup} from 'firebase/auth'
+import {motion} from 'framer-motion'
 
 const TEST_EMAIL = 'testspottr@spottr.brunogg.in'
 const TEST_PASS = 'spottr'
@@ -18,31 +19,37 @@ function StickyNote() {
     }
 
     return (
-        <div
-            className="absolute -top-16 right-0 sm:-top-10 sm:-right-42 z-20 w-56 sm:w-64 bg-amber-400/95 rounded-lg p-4 shadow-xl -rotate-3 sm:-rotate-6"
+        <motion.div
+            initial={{opacity: 0, y: -12, rotate: -8}}
+            animate={{opacity: 1, y: 0, rotate: -5}}
+            transition={{delay: 0.35, type: 'spring', stiffness: 260, damping: 22}}
+            className="absolute -top-14 right-2 z-20 w-52 rounded-xl bg-[#f0a01e] p-4 sm:-top-8 sm:-right-40 sm:w-56"
+            style={{boxShadow: '0 12px 32px -8px rgba(0,0,0,0.6)'}}
         >
-            <p className="text-amber-900 text-[11px] sm:text-[15px] font-bold tracking-wider uppercase mb-3">
-                Test Account
+            <p className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-black/60">
+                Test account
             </p>
-            <div
+
+            <button
                 onClick={() => copy(TEST_EMAIL, setCopiedEmail)}
-                className="cursor-pointer group mb-2"
+                className="group mt-3 block w-full text-left"
             >
-                <p className="text-[10px] sm:text-[14px] text-amber-800 uppercase tracking-wider mb-0.5">Email</p>
-                <p className="text-amber-950 text-[11px] sm:text-[14px] font-bold break-all leading-snug group-hover:text-amber-700 transition-colors">
-                    {copiedEmail ? '✓ Copied!' : TEST_EMAIL}
+                <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-black/50">Email</p>
+                <p className="mt-0.5 break-all text-xs font-semibold leading-snug text-black transition-opacity group-hover:opacity-70">
+                    {copiedEmail ? '✓ Copied' : TEST_EMAIL}
                 </p>
-            </div>
-            <div
+            </button>
+
+            <button
                 onClick={() => copy(TEST_PASS, setCopiedPass)}
-                className="cursor-pointer group mt-2"
+                className="group mt-3 block w-full text-left"
             >
-                <p className="text-[10px] sm:text-[14px] text-amber-800 uppercase tracking-wider mb-0.5">Password</p>
-                <p className="text-amber-950 text-[11px] sm:text-[14px] font-bold group-hover:text-amber-700 transition-colors">
-                    {copiedPass ? '✓ Copied!' : TEST_PASS}
+                <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-black/50">Password</p>
+                <p className="mt-0.5 text-xs font-semibold text-black transition-opacity group-hover:opacity-70">
+                    {copiedPass ? '✓ Copied' : TEST_PASS}
                 </p>
-            </div>
-        </div>
+            </button>
+        </motion.div>
     )
 }
 
@@ -61,8 +68,8 @@ export default function Login() {
         try {
             await login(email, password)
             navigate('/dashboard')
-        } catch (error) {
-            setError(error.message || 'Login failed. Please try again.')
+        } catch (err) {
+            setError(err.message || 'Login failed. Please try again.')
         }
         setLoading(false)
     }
@@ -74,106 +81,101 @@ export default function Login() {
             const provider = new GoogleAuthProvider()
             await signInWithPopup(auth, provider)
             navigate('/dashboard')
-        } catch (error) {
-            setError(error.message || 'Google login failed.')
+        } catch (err) {
+            setError(err.message || 'Google login failed.')
         }
         setLoading(false)
     }
 
     return (
-        <div className="relative w-full min-h-screen bg-[#080808] flex items-center justify-center overflow-hidden">
-
-            {/*Dot Background*/}
-            <div className="absolute inset-0 opacity-[0.18] pointer-events-none"
-                 style={{
-                     backgroundImage: 'radial-gradient(circle, #06B6D4 1px, transparent 1px)',
-                     backgroundSize: '28px 28px'
-                 }}
-            />
-
-            {/* Cyan glow top-left */}
-            <div className="absolute -top-32 -left-32 w-[400px] h-[400px] rounded-full pointer-events-none"
-                 style={{background: 'radial-gradient(circle, rgba(6,182,212,0.12) 0%, transparent 70%)'}}
-            />
-
-            {/* Purple glow bottom-right */}
-            <div className="absolute -bottom-24 -right-20 w-[350px] h-[350px] rounded-full pointer-events-none"
-                 style={{background: 'radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 70%)'}}
-            />
-
-            <div className="relative z-10 w-[380px] mx-4">
+        <div className="flex min-h-screen items-center justify-center bg-bg px-4">
+            <motion.div
+                initial={{opacity: 0, y: 12}}
+                animate={{opacity: 1, y: 0}}
+                transition={{duration: 0.35, ease: 'easeOut'}}
+                className="relative w-full max-w-sm"
+            >
                 <StickyNote/>
-                {/* Card */}
-                <div
-                    className="relative z-10 w-[380px] mx-4 bg-white/[0.05] border border-white/[0.08] rounded-[20px] px-8 py-9 backdrop-blur-md">
 
-                    {/* Logo */}
-                    <div className="flex flex-col items-center gap-2 mb-8">
-                        <img src="/SPOTTR_LOGO.svg" alt="Spottr" className="h-12 w-auto"/>
+                <div className="relative z-10 rounded-3xl border border-line bg-surface-1 px-7 py-8"
+                     style={{boxShadow: '0 24px 64px -16px rgba(0,0,0,0.8)'}}>
+
+                    <div className="flex flex-col items-center">
+                        <img src="/SPOTTR_LOGO.svg" alt="Spottr" className="h-10 w-auto"/>
+                        <p className="label-mono mt-4">Sign in to continue</p>
                     </div>
 
-                    <div className="h-px bg-white/[0.06] mb-6"/>
+                    <form onSubmit={handleEmailLogin} className="mt-8">
+                        {error && (
+                            <div className="mb-4 rounded-lg border border-bad/20 bg-bad/10 px-3 py-2.5">
+                                <p className="text-sm leading-snug" style={{color: 'var(--color-bad)'}}>
+                                    {error}
+                                </p>
+                            </div>
+                        )}
 
-                    {error && (
-                        <div
-                            className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text.xs">
-                            {error}
+                        <label className="label-mono block">Email</label>
+                        <div className="relative mt-2">
+                            <svg className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-3"
+                                 fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round"
+                                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                            </svg>
+                            <input
+                                type="email"
+                                autoComplete="email"
+                                placeholder="you@example.com"
+                                value={email}
+                                onChange={e => setEmail(e.target.value)}
+                                className="w-full rounded-xl border border-line bg-bg py-3 pl-10 pr-4 text-base
+                                           text-text placeholder:text-text-3 transition-colors
+                                           focus:border-brand/50 focus:outline-none"
+                            />
                         </div>
-                    )}
 
-                    {/* Email */}
-                    <div className="relative mb-2.5">
-                        <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/25 w-4 h-4" fill="none"
-                             stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round"
-                                  d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                        </svg>
-                        <input
-                            type="email"
-                            placeholder="Email address"
-                            value={email}
-                            onChange={e => setEmail(e.target.value)}
-                            className="w-full pl-10 pr-4 py-[11px] bg-white/[0.04] border border-white/[0.08] rounded-[10px] text-white text-[13px] placeholder-white/25 focus:outline-none focus:border-cyan-500/40 transition-colors"
-                        />
-                    </div>
+                        <label className="label-mono mt-5 block">Password</label>
+                        <div className="relative mt-2">
+                            <svg className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-3"
+                                 fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round"
+                                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                            </svg>
+                            <input
+                                type="password"
+                                autoComplete="current-password"
+                                placeholder="••••••••"
+                                value={password}
+                                onChange={e => setPassword(e.target.value)}
+                                className="w-full rounded-xl border border-line bg-bg py-3 pl-10 pr-4 text-base
+                                           text-text placeholder:text-text-3 transition-colors
+                                           focus:border-brand/50 focus:outline-none"
+                            />
+                        </div>
 
-                    {/* Password */}
-                    <div className="relative mb-2">
-                        <svg className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/25 w-4 h-4" fill="none"
-                             stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round"
-                                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                        </svg>
-                        <input
-                            type="password"
-                            placeholder="Password"
-                            value={password}
-                            onChange={e => setPassword(e.target.value)}
-                            className="w-full pl-10 pr-4 py-[11px] bg-white/[0.04] border border-white/[0.08] rounded-[10px] text-white text-[13px] placeholder-white/25 focus:outline-none focus:border-cyan-500/40 transition-colors"
-                        />
-                    </div>
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className="mt-6 w-full rounded-xl bg-brand py-3 text-sm font-semibold text-black
+                                       transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-40"
+                        >
+                            {loading ? 'Signing in…' : 'Sign in'}
+                        </button>
+                    </form>
 
-                    <button
-                        onClick={handleEmailLogin}
-                        disabled={loading}
-                        className="w-full mt-2 py-3 bg-cyan-500 hover:bg-cyan-400 text-black font-bold text-[13px] tracking-wider rounded-[10px] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        {loading ? 'Signing in...' : 'Sign In'}
-                    </button>
-
-
-                    <div className="flex items-center gap-2.5 my-4">
-                        <div className="flex-1 h-px bg-white/[0.07]"/>
-                        <span className="text-white/25 text-[11px]">or</span>
-                        <div className="flex-1 h-px bg-white/[0.07]"/>
+                    <div className="my-5 flex items-center gap-3">
+                        <div className="h-px flex-1 bg-line"/>
+                        <span className="label-mono">or</span>
+                        <div className="h-px flex-1 bg-line"/>
                     </div>
 
                     <button
                         onClick={handleGoogleLogin}
                         disabled={loading}
-                        className="w-full py-[11px] border border-white/10 hover:border-white/20 hover:bg-white/[0.03] text-white/70 text-[13px] rounded-[10px] flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
+                        className="flex w-full items-center justify-center gap-2.5 rounded-xl border border-line
+                                   py-3 text-sm text-text-2 transition-colors hover:border-line-strong hover:text-text
+                                   disabled:opacity-40"
                     >
-                        <svg width="15" height="15" viewBox="0 0 24 24">
+                        <svg width="16" height="16" viewBox="0 0 24 24">
                             <path fill="#4285F4"
                                   d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                             <path fill="#34A853"
@@ -185,12 +187,13 @@ export default function Login() {
                         </svg>
                         Continue with Google
                     </button>
-                    <div className="flex items-center justify-center mt-5">
+
+                    <div className="mt-6 flex justify-center">
                         <Link
                             to="/"
-                            className="flex items-center gap-1.5 text-white/30 hover:text-white/60 text-[12px] transition-colors"
+                            className="flex items-center gap-1.5 text-sm text-text-3 transition-colors hover:text-text-2"
                         >
-                            <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2"
+                            <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.8"
                                  viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                             </svg>
@@ -198,7 +201,7 @@ export default function Login() {
                         </Link>
                     </div>
                 </div>
-            </div>
+            </motion.div>
         </div>
     )
 }
