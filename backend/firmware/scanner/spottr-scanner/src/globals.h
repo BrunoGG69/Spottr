@@ -15,8 +15,8 @@
 
 #define FW_MAJOR 0
 #define FW_MINOR 8
-#define FW_PATCH 0
-#define FIRMWARE_VERSION "0.8.0"
+#define FW_PATCH 1
+#define FIRMWARE_VERSION "0.8.1"
 
 extern PubSubClient mqtt;
 extern Preferences preferences;

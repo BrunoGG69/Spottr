@@ -29,6 +29,13 @@ bool configPortalActive = false;
 const byte DNS_PORT = 53;
 IPAddress apIP(192, 168, 4, 1);
 
+static unsigned long lastWifiCheck = 0;
+
+static bool hasCredentials()
+{
+    return wifiSsid.length() > 0;
+}
+
 static bool waitForConfigCommand(unsigned long timeoutMs)
 {
     Serial.println("Type 'config' and press Enter within " + String(timeoutMs / 1000) + "s to open the config portal...");
@@ -56,6 +63,50 @@ static bool waitForConfigCommand(unsigned long timeoutMs)
     return false;
 }
 
+static void enterConfigPortal()
+{
+    preferences.begin("spottr-cfg", false);
+    preferences.putBool("setup_done", false);
+    preferences.putUInt("step", 0);
+    preferences.end();
+    setupStep = 0;
+    setupDone = false;
+    ledSet(LED_PORTAL);
+    startConfigPortal();
+}
+
+static void waitForWiFi()
+{
+    unsigned long attemptStart = millis();
+
+    while (!tryConnectSavedWiFi(15000))
+    {
+        unsigned long waited = (millis() - attemptStart) / 1000;
+        Serial.println("WiFi unavailable (" + String(waited) + "s) — credentials present, retrying.");
+
+        WiFi.disconnect();
+        delay(500);
+
+        for (int i = 0; i < 100; i++)
+        {
+            ledUpdate();
+            delay(50);
+        }
+    }
+}
+
+static void serviceWiFi()
+{
+    if (millis() - lastWifiCheck < 5000) return;
+    lastWifiCheck = millis();
+
+    if (WiFi.status() == WL_CONNECTED) return;
+
+    Serial.println("WiFi down..... Reconnecting.");
+    ledSet(LED_CONNECTING);
+    WiFi.reconnect();
+}
+
 void setup()
 {
     Serial.begin(115200);
@@ -69,42 +120,28 @@ void setup()
 
     loadConfig();
 
-    if (!setupDone)
+    if (!hasCredentials())
     {
-        Serial.println("Setup not complete — opening config portal.");
+        Serial.println("No WiFi credentials in NVS — opening config portal.");
         dumpStoredConfig("boot");
-        ledSet(LED_PORTAL);
-        startConfigPortal();
+        enterConfigPortal();
         return;
     }
 
     if (waitForConfigCommand(5000))
     {
         Serial.println("Config command received — forcing config portal.");
-        preferences.begin("spottr-cfg", false);
-        preferences.putBool("setup_done", false);
-        preferences.putUInt("step", 0);
-        preferences.end();
-        setupStep = 0;
-        setupDone = false;
-        ledSet(LED_PORTAL);
-        startConfigPortal();
+        enterConfigPortal();
         return;
     }
 
-    if (!tryConnectSavedWiFi(10000))
-    {
-        ledSet(LED_PORTAL);
-        startConfigPortal();
-        return;
-    }
+    waitForWiFi();
 
     scannerMac = WiFi.macAddress();
     Serial.println("Scanner MAC: " + scannerMac);
     Serial.println("Scanner ID: " + scannerId);
     Serial.println("Room: " + roomName);
     Serial.println("MQTT Broker: " + mqttBroker + ":" + String(mqttPort));
-    Serial.println("OTA Worked Properly");
 
     delay(1000);
 
@@ -120,12 +157,20 @@ void loop()
         return;
     }
 
+    serviceWiFi();
+
+    if (WiFi.status() != WL_CONNECTED)
+    {
+        ledUpdate();
+        return;
+    }
+
     if (!mqtt.connected())
     {
         ledSet(LED_CONNECTING);
         connectMQTT();
     }
-    else
+    else if (!isOtaActive())
     {
         ledSet(LED_ONLINE);
     }

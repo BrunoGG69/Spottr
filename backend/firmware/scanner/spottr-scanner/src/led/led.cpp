@@ -57,8 +57,8 @@ void ledUpdate()
 
     case LED_OTA:
     {
-        unsigned long p = t % 1200;
-        writeLed((p < 100) || (p >= 200 && p < 300));
+        unsigned long p = t % 600;
+        writeLed((p < 80) || (p >= 160 && p < 240));
         break;
     }
 

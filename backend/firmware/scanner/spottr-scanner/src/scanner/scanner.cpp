@@ -23,6 +23,7 @@ bool tryConnectSavedWiFi(unsigned long timeoutMs)
 
     Serial.println("Connecting to saved WiFi: " + wifiSsid);
     WiFi.mode(WIFI_STA);
+    WiFi.setAutoReconnect(true);
     WiFi.begin(wifiSsid.c_str(), wifiPass.c_str());
 
     unsigned long start = millis();
@@ -39,8 +40,7 @@ bool tryConnectSavedWiFi(unsigned long timeoutMs)
         return true;
     }
 
-    Serial.println("\nFailed to connect with saved credentials.");
-    WiFi.disconnect(true);
+    Serial.println("\nNot connected yet.");
     return false;
 }
 

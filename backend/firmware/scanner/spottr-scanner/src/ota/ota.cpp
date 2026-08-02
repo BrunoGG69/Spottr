@@ -5,8 +5,11 @@
 #include <WiFiClientSecure.h>
 
 static bool otaPending = false;
+static bool otaActive = false;
 static String otaUrl;
 static String otaVersion;
+
+bool isOtaActive() { return otaActive; }
 
 String otaTopic(){
     return "spottr/firmware/scanner";
@@ -54,29 +57,54 @@ static void performOTA(const String &url){
     httpUpdate.rebootOnUpdate(true);
     httpUpdate.setFollowRedirects(HTTPC_FORCE_FOLLOW_REDIRECTS);
 
+    httpUpdate.onStart([]() {
+        ledSet(LED_OTA);
+        Serial.println("OTA started");
+    });
+
+    httpUpdate.onProgress([](int cur, int total) {
+        ledUpdate();
+        static int lastPct = -1;
+        int pct = total ? (cur * 100) / total : 0;
+        if (pct != lastPct && pct % 10 == 0) {
+            Serial.printf("OTA progress: %d%%\n", pct);
+            lastPct = pct;
+        }
+    });
+
+    httpUpdate.onError([](int err) {
+        Serial.printf("OTA error: %d\n", err);
+        ledSet(LED_ERROR);
+    });
+
     t_httpUpdate_return ret = httpUpdate.update(client, url);
 
     switch (ret)
     {
     case HTTP_UPDATE_FAILED:
-        Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s\n",
-                      httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
+        Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
+        ledSet(LED_ERROR);
+        for (int i = 0; i < 60; i++) { ledUpdate(); delay(50); }
         break;
+
     case HTTP_UPDATE_NO_UPDATES:
         Serial.println("HTTP_UPDATE_NO_UPDATES");
         break;
+
     case HTTP_UPDATE_OK:
         Serial.println("HTTP_UPDATE_OK");
+        ledSet(LED_ONLINE);
+        ledUpdate();
         break;
     }
 }
 
 void serviceOTA(){
-    if (otaPending){
-        if (!otaPending) return;
-        otaPending = false;
-        ledSet(LED_OTA);
-        Serial.println("Starting OTA to version " + otaVersion);
-        performOTA(otaUrl);
-    }
+    if (!otaPending) return;
+    otaPending = false;
+    otaActive = true;
+    ledSet(LED_OTA);
+    Serial.println("Starting OTA to version " + otaVersion);
+    performOTA(otaUrl);
+    otaActive = false;
 }
