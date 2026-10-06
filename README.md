@@ -154,7 +154,7 @@ Add your Firebase config to `.env` file. Check `.env.example` for reference.
 ---
 
 ## License
-MIT License © 2026 Prathamesh Prabhakar
+AGPL-3.0 © 2026 Prathamesh Prabhakar
 
 ---
 **Note: Spottr is currently under active development. Stay tuned.**
