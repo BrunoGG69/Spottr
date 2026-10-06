@@ -28,6 +28,11 @@ SPOTTR is an open-source indoor presence tracking system built on a cheap aah mi
 ## Flow Chart
 ![SPOTTR_DIAGRAM.png](docs/SPOTTR_DIAGRAM.png)
 
+---
+
+## Setup Guide:
+Checkout the [Setup File](SETUP_PROJECT.md)
+
 ## License
 AGPL-3.0 © 2026 Prathamesh Prabhakar
 
