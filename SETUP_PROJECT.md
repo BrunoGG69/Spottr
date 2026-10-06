@@ -3,7 +3,7 @@
 ### Prerequisites
 - **ESP32-C3** modules for badges
 - **ESP32-C6** modules for scanners
-- Any Linux server already setup with MQTT to use as the bridge between scanner and the database
+- **Any Linux server** (I would recommend running it locally)
 - [PlatformIO](https://platformio.org/) on a PC
 
 ### 1. Flash the firmware
