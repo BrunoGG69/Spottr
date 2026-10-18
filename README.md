@@ -25,6 +25,9 @@ I started building this project because of one problem, no one can accurately tr
 - **LiPo Battery**
 - **ESP32-C6**
 
+## Demo
+https://youtu.be/ntAMRt7f-G8
+
 ## Renders
 
 A 3D-printable, card-format enclosure for the badge, designed in Fusion 360 to fit the board and battery.
