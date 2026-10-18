@@ -33,7 +33,8 @@ A 3D-printable, card-format enclosure for the badge, designed in Fusion 360 to f
 
 ## Wiring Diagram
 
-Wiring for the badge. The LED used here is optional and can be excluded. Note that not using the LED would definitely improve the battery life of the badges
+Wiring for the badge. 
+> **The LED used here is optional and can be excluded. Note that not using the LED would definitely improve the battery life of the badges**
 
 ![SPOTTR_CIRCUIT_BADGE.png](docs/SPOTTR_CIRCUIT_BADGE.png)
 
