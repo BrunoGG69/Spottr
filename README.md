@@ -6,57 +6,51 @@
 
 SPOTTR is an open-source indoor presence tracking system built on a cheap aah microcontroller (ESP32-C3 & ESP32-C6) and Bluetooth Low Energy. This project has multiple applications as it can be used in schools, offices, warehouses or even hospitals.
 
-I started building this project because of one problem, no one can accurately track someone inside a closed building or space while also keeping a head count. I saw this problem at my school as whenever we went to the field, they had to do a manual roll call, and then another one once we were back in class. The school also had no way to find someone when they needed to. We only knew that someone was inside the building, not where exactly they were.
+I started building this project because of one problem, no one can accurately track someone inside a closed building or space while also keeping a head count. I saw this problem at my school. Every time we went to the field, they had to do a manual roll call, and then another one once we were back in class. The school also had no way to find someone when they needed to. We only knew that someone was inside the building, not where exactly they were.
+
 <p align="center">
   <img src="docs/SPOTTR_PRODUCT_IMAGE.png" alt="SPOTTR_PRODUCT_IMAGE.png">
 </p>
 
----
-
 ## Features
 
-- **Wearable BLE Badges**: ESP32-C3 Powered badges that broadcast BLE signals at a particular period of time.
-- **Room Level Detection**: Fixed scanner nodes placed in every room to detect the badges and publish the recieved values via MQTT.
-- **Spottr-Bridge**: This is a server that sits between the scanner-nodes and the cloud as data from the nodes first reaches this server via MQTT and then passed on to the cloud. Did this to reduce load on each scanner if they started publishing data individually.
-
----
+- **Wearable BLE Badges**
+- **Room Level Detection**
+- **Scanner to Cloud Bridge**
+- **Live Floor Map**
 
 ## Hardware Components Used
 
-- **ESP32-C3**: A Low-power microcontroller which also has BLE support. This is used inside the badges
-- **LiPo Battery**: To power the badge.
-- **ESP32-C6**: Used in the scanner-nodes to recieve data from ESP32-C3 badges.
-
----
+- **ESP32-C3**
+- **LiPo Battery**
+- **ESP32-C6**
 
 ## Renders
 
-![SPOTTR_RENDER_COLLECTION.png](docs/SPOTTR_RENDER_COLLECTION.png)
+A 3D-printable, card-format enclosure for the badge, designed in Fusion 360 to fit the board and battery.
 
----
+![SPOTTR_RENDER_COLLECTION.png](docs/SPOTTR_RENDER_COLLECTION.png)
 
 ## Wiring Diagram
 
-![SPOTTR_CIRCUIT_BADGE.png](docs/SPOTTR_CIRCUIT_BADGE.png)
+Wiring for the badge. The LED used here is optional and can be excluded. Note that not using the LED would definitely improve the battery life of the badges
 
----
+![SPOTTR_CIRCUIT_BADGE.png](docs/SPOTTR_CIRCUIT_BADGE.png)
 
 ## Flow Chart
 
 ![SPOTTR_DIAGRAM.png](docs/SPOTTR_DIAGRAM.png)
 
----
-
 ## Setup Guide:
 
-Checkout the [Setup File](docs/SETUP_PROJECT.md)
+The setup guide covers flashing the badges and scanners, getting the bridge running, and connecting the dashboard.
 
----
+Checkout the [Setup Guide](docs/SETUP_PROJECT.md)
 
 ## License
 
-AGPL-3.0 © 2026 Prathamesh Prabhakar
+This project is licensed under AGPL-3.0, so you are free to use, modify, and share it, as long as any modified version you distribute or run as a service is also open-source.
 
----
+AGPL-3.0 © 2026 Prathamesh Prabhakar
 
 > **Note: Spottr is currently under active development. Stay tuned for more stuff to be added**
