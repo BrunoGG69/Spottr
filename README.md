@@ -51,14 +51,14 @@ The setup guide covers flashing the badges and scanners, getting the bridge runn
 
 Checkout the [Setup Guide](docs/SETUP_PROJECT.md)
 
+## AI Declaration
+
+The creation of this project has been assisted by AI. Components such as a few parts of frontend are AI assisted. Backend, firmware I've used code suggestions (Github Copilot) in the creation process.
+
 ## License
 
 This project is licensed under AGPL-3.0, so you are free to use, modify, and share it, as long as any modified version you distribute or run as a service is also open-source.
 
 AGPL-3.0 © 2026 Prathamesh Prabhakar
-
-## AI Declaration
-
-The creation of this project has been assisted by AI. Components such as a few parts of frontend are AI assisted. Backend, firmware I've used code suggestions (Github Copilot) in the creation process.
 
 > **Note: Spottr is currently under active development. Stay tuned for more stuff to be added**
