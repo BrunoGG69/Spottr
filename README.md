@@ -25,6 +25,9 @@ I started building this project because of one problem, no one can accurately tr
 - **LiPo Battery**
 - **ESP32-C6**
 
+## Demo
+https://youtu.be/ntAMRt7f-G8
+
 ## Renders
 
 - A 3D-printable, credit card sized enclosure for the badge which was designed in Fusion 360 to fit the board and battery. There's a 0.5mm gap also left in the design as I have added a thin layer of Hot Glue to achieve a translucent border look (to make the LED light shine from inside)
@@ -45,6 +48,10 @@ Wiring Diagram for the badge... The LED and resistors are optional and not inclu
 ## Setup Guide:
 
 Follow the [Setup Guide](docs/SETUP_PROJECT.md) attached here to run this project locally
+
+## AI Declaration
+
+The creation of this project has been assisted by AI. Components such as a few parts of frontend are AI assisted. Backend, firmware I've used code suggestions (Github Copilot) in the creation process.
 
 ## License
 
