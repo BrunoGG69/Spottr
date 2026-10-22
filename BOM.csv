@@ -1,7 +1,16 @@
 Item Name,Qty,Price (total) (USD),Price (total) (INR),Item link,Notes
-ESP32-C6,2,12.18,1150,https://techiesms.com/product/seeed-studio-xiao-esp32c6/,Used for scanner nodes
-ESP32-C3,2,11.86,1120,https://techiesms.com/product/seeed-studio-xiao-esp32c3/,Used for badges
-Li-PO Battery,2,6.64,628,https://robu.in/product/nova-103450-2000mah-3-7v-lipo-battery-pack/,Used in badges
+Seeed Studio XIAO ESP32-C6,2,12.18,1150,https://techiesms.com/product/seeed-studio-xiao-esp32c6/,Used for scanner nodes
+Seeed Studio XIAO ESP32-C3,2,11.86,1120,https://techiesms.com/product/seeed-studio-xiao-esp32c3/,Used for badges
+WLY102535 LiPo Battery (3.7V 950mAh),2,8.2,774,https://robu.in/product/950mah-pcm-protected-micro-li-po-battery/,Used in badges
+5mm Red LED (Kingbright WP7113ID),2,0.42,39.9,https://www.digikey.com/en/products/detail/kingbright/WP7113ID/1747663,"Optional status LED for the badges, already owned two of them, didn't buy this"
+220 Ohm Resistor 1/4W (Stackpole CF14JT220R),2,0.2,19,https://www.digikey.com/en/products/detail/stackpole-electronics-inc/CF14JT220R/1830334,"Current-limiting resistor for the badge LED, already owned two of them, didn't buy this"
+2.4GHz FPC Antenna (U.FL),2,0,0,N/A,Included with the XIAO ESP32-C3 and used in the badges
+2.4GHz Wi-Fi Antenna,2,0,0,N/A,Salvaged from an old Wi-Fi router and used in the scanners
+USB-A Power Adapter (5V),2,2.71,258,https://amzn.in/d/02WNDed4,"Already owned two of them, didn't buy this"
+USB-A to USB-C Cable (Short Length),2,3.03,288,https://amzn.in/d/0cl0xVNy,"Already owned two of them, didn't buy this"
+3D-Printed Badge Enclosure,2,2.36,223.24,N/A,Got this printed from #printing-legion
+Scanner Enclosure Box,2,0,0,N/A,"Already owned two boxes, used them instead of the 3D-Printed one"
+Shipping (Robu.in - LiPo batteries),1,2.11,200,N/A,Shipping for the LiPo batteries
+Shipping (techiesms - XIAO ESP32 boards),1,1.05,100,N/A,Shipping for the XIAO ESP32-C3 and ESP32-C6 boards
 ,,,,,
-Total Price: (USD),30.68,,,,
-Total Price: (INR),2898,,,,
+Total Price:,,44.12,4172.14,,

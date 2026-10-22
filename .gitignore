@@ -25,3 +25,6 @@ Thumbs.db
 
 # Gitkeep exceptions
 !.gitkeep
+
+# VS Code files
+.vscode/

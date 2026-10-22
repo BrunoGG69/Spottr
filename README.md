@@ -27,13 +27,14 @@ I started building this project because of one problem, no one can accurately tr
 
 ## Renders
 
-A 3D-printable, card-format enclosure for the badge, designed in Fusion 360 to fit the board and battery.
+- A 3D-printable, credit card sized enclosure for the badge which was designed in Fusion 360 to fit the board and battery. There's a 0.5mm gap also left in the design as I have added a thin layer of Hot Glue to achieve a translucent border look (to make the LED light shine from inside)
+- 3D printable models for the scanner also exists but I have decided to use a small plastic box instead of getting it 3D printed as it's a very small part
 
 ![SPOTTR_RENDER_COLLECTION.png](docs/SPOTTR_RENDER_COLLECTION.png)
 
 ## Wiring Diagram
 
-Wiring for the badge. The LED used here is optional and can be excluded. Note that not using the LED would definitely improve the battery life of the badges
+Wiring Diagram for the badge... The LED and resistors are optional and not including them will improve the battery life a little bit.
 
 ![SPOTTR_CIRCUIT_BADGE.png](docs/SPOTTR_CIRCUIT_BADGE.png)
 
@@ -43,9 +44,7 @@ Wiring for the badge. The LED used here is optional and can be excluded. Note th
 
 ## Setup Guide:
 
-The setup guide covers flashing the badges and scanners, getting the bridge running, and connecting the dashboard.
-
-Checkout the [Setup Guide](docs/SETUP_PROJECT.md)
+Follow the [Setup Guide](docs/SETUP_PROJECT.md) attached here to run this project locally
 
 ## License
 
