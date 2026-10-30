@@ -55,7 +55,7 @@ The creation of this project has been assisted by AI. Components such as a few p
 
 ## License
 
-This project is licensed under AGPL-3.0, so you are free to use, modify, and share it, as long as any modified version you distribute or run as a service is also open-source.
+This project is licensed under AGPL-3.0, so you are free to use, modify and share it as long as the modified version distributed or run is also open-source
 
 AGPL-3.0 © 2026 Prathamesh Prabhakar
 
